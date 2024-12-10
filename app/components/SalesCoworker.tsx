@@ -7,7 +7,6 @@ import {
   MessageSquare,
   Send,
   Sparkles,
-  DollarSign,
   ChevronRight
 } from 'lucide-react';
 
