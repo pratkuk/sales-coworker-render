@@ -6,15 +6,14 @@ import { UserCircle, ListTodo, StickyNote } from 'lucide-react';
 const initialTasks = [
   { id: 1, text: 'Follow up with Acme Corp', completed: false },
   { id: 2, text: 'Prepare proposal for TechStart', completed: true },
+  { id: 3, text: 'Schedule demo with NewCo', completed: false }, // Added a new task
 ];
 
 export default function SalesCoworker() {
-  // Use null as initial state to indicate not-yet-loaded
   const [tasks, setTasks] = useState<Array<{ id: number; text: string; completed: boolean }> | null>(null);
   const [newTask, setNewTask] = useState('');
   const [note, setNote] = useState('');
 
-  // Initialize data after mount
   useEffect(() => {
     setTasks(initialTasks);
   }, []);
@@ -33,7 +32,6 @@ export default function SalesCoworker() {
     ));
   };
 
-  // Show loading state until client-side data is initialized
   if (tasks === null) {
     return (
       <div className="max-w-4xl mx-auto p-4">
@@ -55,6 +53,7 @@ export default function SalesCoworker() {
           <div>
             <h2 className="text-xl font-bold">Sarah Wilson</h2>
             <p className="text-sm text-gray-500">Enterprise Sales Executive</p>
+            <p className="text-xs text-blue-500 mt-1">Last updated: {new Date().toLocaleDateString()}</p>
           </div>
         </div>
         <div className="mt-4 text-sm text-gray-600">
