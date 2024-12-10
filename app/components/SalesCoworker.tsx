@@ -1,61 +1,30 @@
 'use client';
 
 import { useState } from 'react';
-import { SalesWidget } from './SalesWidget';
 import { HubspotView, ClariView, DealhubView, GmailView } from './MockUIs';
+import { SalesWidget } from './SalesWidget';
+import { getContextualPrompts } from './getContextualPrompts';
 
 type AppType = 'hubspot' | 'clari' | 'dealhub' | 'gmail';
 
-const getContextualPrompts = (app: AppType) => {
-  switch (app) {
-    case 'hubspot':
-      return [
-        "Draft a follow-up email for this deal",
-        "Analyze win probability",
-        "Generate meeting summary",
-        "Create task list for next steps",
-        "Summarize deal history"
-      ];
-    case 'clari':
-      return [
-        "Generate forecast analysis",
-        "Compare to last quarter",
-        "Identify risk factors",
-        "Create revenue projection",
-        "Analyze pipeline changes"
-      ];
-    case 'dealhub':
-      return [
-        "Generate quote",
-        "Create proposal draft",
-        "Compare pricing options",
-        "Review deal terms",
-        "Calculate discounts"
-      ];
-    case 'gmail':
-      return [
-        "Draft response email",
-        "Summarize email thread",
-        "Create meeting agenda",
-        "Extract action items",
-        "Schedule follow-up"
-      ];
-  }
-};
-
 export function SalesCoworker() {
-  const [activeApp, setActiveApp] = useState<AppType>('hubspot');
+  const [activeApp, setActiveApp] = useState<AppType>('gmail');
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+
+  const handleItemSelect = (item: any) => {
+    setSelectedItem(item);
+  };
 
   const renderActiveView = () => {
     switch (activeApp) {
       case 'hubspot':
-        return <HubspotView />;
+        return <HubspotView onSelect={handleItemSelect} selectedId={selectedItem?.id} />;
       case 'clari':
-        return <ClariView />;
+        return <ClariView onSelect={handleItemSelect} selectedId={selectedItem?.id} />;
       case 'dealhub':
-        return <DealhubView />;
+        return <DealhubView onSelect={handleItemSelect} selectedId={selectedItem?.id} />;
       case 'gmail':
-        return <GmailView />;
+        return <GmailView onSelect={handleItemSelect} selectedId={selectedItem?.id} />;
     }
   };
 
@@ -66,11 +35,14 @@ export function SalesCoworker() {
         {(['hubspot', 'clari', 'dealhub', 'gmail'] as AppType[]).map((app) => (
           <button
             key={app}
-            onClick={() => setActiveApp(app)}
-            className={`mr-2 px-3 py-1 rounded ${
+            onClick={() => {
+              setActiveApp(app);
+              setSelectedItem(null);
+            }}
+            className={`mr-2 px-3 py-1 rounded transition-colors ${
               activeApp === app 
-                ? 'bg-blue-100 text-blue-700' 
-                : 'bg-gray-100 text-gray-700'
+                ? 'bg-blue-100 text-blue-700 border-2 border-blue-500' 
+                : 'bg-gray-100 text-gray-700 border-2 border-transparent hover:border-gray-300'
             }`}
           >
             {app.charAt(0).toUpperCase() + app.slice(1)}
@@ -85,10 +57,10 @@ export function SalesCoworker() {
         </div>
       </div>
 
-      {/* Sales Widget - This will float over the UI */}
+      {/* Sales Widget */}
       <SalesWidget 
         activeApp={activeApp}
-        contextualPrompts={getContextualPrompts(activeApp)}
+        contextualPrompts={getContextualPrompts(activeApp, selectedItem)}
       />
     </div>
   );
