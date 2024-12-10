@@ -50,7 +50,6 @@ export function SalesWidget({ activeApp, contextualPrompts }: WidgetProps) {
   const widgetRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom of chat
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -63,6 +62,47 @@ export function SalesWidget({ activeApp, contextualPrompts }: WidgetProps) {
       y: 100 
     });
   }, []);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.target instanceof Element && e.target.closest('.drag-handle')) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.clientX - position.x,
+        y: e.clientY - position.y
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging && widgetRef.current) {
+        const newX = e.clientX - dragStart.x;
+        const newY = e.clientY - dragStart.y;
+        
+        const maxX = window.innerWidth - widgetRef.current.offsetWidth;
+        const maxY = window.innerHeight - widgetRef.current.offsetHeight;
+        
+        setPosition({
+          x: Math.min(Math.max(0, newX), maxX),
+          y: Math.min(Math.max(0, newY), maxY)
+        });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragStart, isMounted]);
 
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
@@ -85,11 +125,8 @@ export function SalesWidget({ activeApp, contextualPrompts }: WidgetProps) {
     setIsInChat(true);
     if (prompt) {
       setInputValue(prompt);
-      // You might want to auto-send the prompt or let user modify it first
     }
   };
-
-  // ... (keep the drag handling code)
 
   if (!isMounted) return null;
 
