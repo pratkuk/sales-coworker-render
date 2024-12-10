@@ -1,56 +1,53 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, Minimize2, Maximize2, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { MessageSquare, Minimize2, Maximize2 } from 'lucide-react';
 
-interface SalesWidgetProps {
-  selectedDeal: any;
-  prompts: string[];
-  onSendMessage: (message: string) => void;
+interface WidgetProps {
+  activeApp: 'hubspot' | 'clari' | 'dealhub' | 'gmail';
+  contextualPrompts: string[];
 }
 
-const SalesWidget = ({ selectedDeal, prompts, onSendMessage }: SalesWidgetProps) => {
+export function SalesWidget({ activeApp, contextualPrompts }: WidgetProps) {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [position, setPosition] = useState({ x: 20, y: window.innerHeight - 100 });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [input, setInput] = useState('');
+  const [position, setPosition] = useState({ x: window.innerWidth - 420, y: 100 });
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [inputValue, setInputValue] = useState('');
   
-  const widgetRef = useRef(null);
+  const widgetRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseDown = (e) => {
-    if (e.target.closest('.drag-handle')) {
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.target instanceof Element && e.target.closest('.drag-handle')) {
       setIsDragging(true);
-      setDragOffset({
+      setDragStart({
         x: e.clientX - position.x,
         y: e.clientY - position.y
       });
     }
   };
 
-  const handleMouseMove = (e) => {
-    if (isDragging) {
-      const newX = e.clientX - dragOffset.x;
-      const newY = e.clientY - dragOffset.y;
-      
-      const maxX = window.innerWidth - (widgetRef.current?.offsetWidth || 0);
-      const maxY = window.innerHeight - (widgetRef.current?.offsetHeight || 0);
-      
-      setPosition({
-        x: Math.min(Math.max(0, newX), maxX),
-        y: Math.min(Math.max(0, newY), maxY)
-      });
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
   useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging && widgetRef.current) {
+        const newX = e.clientX - dragStart.x;
+        const newY = e.clientY - dragStart.y;
+        
+        // Keep widget within window bounds
+        const maxX = window.innerWidth - widgetRef.current.offsetWidth;
+        const maxY = window.innerHeight - widgetRef.current.offsetHeight;
+        
+        setPosition({
+          x: Math.min(Math.max(0, newX), maxX),
+          y: Math.min(Math.max(0, newY), maxY)
+        });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
     
@@ -58,92 +55,69 @@ const SalesWidget = ({ selectedDeal, prompts, onSendMessage }: SalesWidgetProps)
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging]);
-
-  const handleSendMessage = () => {
-    if (input.trim()) {
-      onSendMessage(input);
-      setInput('');
-    }
-  };
+  }, [isDragging, dragStart]);
 
   return (
-    <Card
+    <div
       ref={widgetRef}
-      className={`fixed shadow-lg transition-all duration-200 ${isDragging ? 'cursor-grabbing' : ''}`}
       style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        width: isExpanded ? '320px' : '48px',
-        height: isExpanded ? '400px' : '48px',
-        transform: 'translate(0, 0)',
-        zIndex: 1000
+        position: 'fixed',
+        left: position.x,
+        top: position.y,
+        width: isExpanded ? '400px' : '48px',
+        zIndex: 9999,
       }}
-      onMouseDown={handleMouseDown}
+      className={`bg-white rounded-lg shadow-lg transition-all duration-200 ${
+        isDragging ? 'cursor-grabbing' : ''
+      }`}
     >
-      {/* Header/Drag Handle */}
-      <div className="drag-handle h-12 flex items-center justify-between px-3 bg-primary text-primary-foreground cursor-grab rounded-t-lg">
+      {/* Header - Always visible */}
+      <div
+        className="drag-handle h-12 flex items-center justify-between px-4 bg-blue-600 text-white rounded-t-lg cursor-grab"
+        onMouseDown={handleMouseDown}
+      >
         <div className="flex items-center gap-2">
-          <MessageCircle size={20} />
-          {isExpanded && <span>Sales Assistant</span>}
+          <MessageSquare size={20} />
+          {isExpanded && <span>Sales Assistant ({activeApp})</span>}
         </div>
-        <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 hover:bg-primary/20"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-          </Button>
-          {isExpanded && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 hover:bg-primary/20"
-              onClick={() => setIsExpanded(false)}
-            >
-              <X size={16} />
-            </Button>
-          )}
-        </div>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="hover:bg-blue-700 p-1 rounded"
+        >
+          {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+        </button>
       </div>
 
-      {/* Expanded Content */}
+      {/* Expandable Content */}
       {isExpanded && (
-        <div className="p-4 flex flex-col h-[calc(400px-3rem)]">
-          {/* Suggestions */}
-          <div className="mb-4 space-y-2">
-            <p className="text-sm text-muted-foreground">Suggestions:</p>
-            {prompts.map((prompt, index) => (
-              <Button
+        <div className="p-4 bg-white rounded-b-lg">
+          {/* Contextual Prompts */}
+          <div className="space-y-2 mb-4">
+            <div className="text-sm text-gray-500 mb-2">Suggested actions:</div>
+            {contextualPrompts.map((prompt, index) => (
+              <button
                 key={index}
-                variant="outline"
-                className="w-full justify-start text-left h-auto py-2"
-                onClick={() => {
-                  onSendMessage(prompt);
-                  setInput('');
-                }}
+                className="w-full text-left p-2 text-sm hover:bg-gray-50 rounded text-blue-600 hover:text-blue-700"
+                onClick={() => setInputValue(prompt)}
               >
                 {prompt}
-              </Button>
+              </button>
             ))}
           </div>
 
           {/* Input Area */}
-          <div className="mt-auto">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Type your question..."
-              className="w-full"
-              onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+          <div className="mt-4">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Ask anything..."
+              className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onKeyPress={(e) => e.key === 'Enter' && console.log('Send:', inputValue)}
             />
           </div>
         </div>
       )}
-    </Card>
+    </div>
   );
-};
-
-export default SalesWidget;
+}
