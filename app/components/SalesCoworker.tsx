@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Building2, 
   Calendar,
@@ -59,73 +59,81 @@ const deals: Deal[] = [
 ];
 
 const getContextualPrompts = (deal: Deal): string[] => {
-  const basePrompts = [
-    "Draft a follow-up email",
-    "Summarize deal history"
+  // Base prompts for all deals
+  let contextualPrompts = [
+    `Draft a follow-up email to ${deal.companyName}`,
+    `Summarize ${deal.companyName} deal history`,
   ];
 
-  const stagePrompts = {
-    "Discovery": [
-      "Create discovery call agenda",
-      "Generate qualification questions",
-      "Draft needs assessment document"
-    ],
-    "Proposal": [
-      "Generate proposal outline",
-      "Draft ROI calculation",
-      "Create technical review agenda"
-    ],
-    "Negotiation": [
-      "Draft pricing comparison",
-      "Create negotiation strategy",
-      "Prepare contract summary"
-    ]
-  };
+  // Stage-specific prompts
+  switch (deal.stage) {
+    case "Discovery":
+      contextualPrompts.push(
+        "Generate discovery call agenda",
+        "Create qualification questions list",
+        "Draft needs assessment document"
+      );
+      break;
+    case "Proposal":
+      contextualPrompts.push(
+        "Generate proposal outline",
+        "Calculate ROI projections",
+        "Create technical review agenda"
+      );
+      break;
+    case "Negotiation":
+      contextualPrompts.push(
+        "Draft pricing comparison",
+        "Create negotiation strategy",
+        `Generate ${deal.companyName} contract terms`
+      );
+      break;
+  }
 
-  const statusPrompts = {
-    'stalled': [
-      `Re-engagement strategy for ${deal.companyName}`,
+  // Status-specific prompts
+  if (deal.status === 'stalled') {
+    contextualPrompts.push(
+      `Create re-engagement plan for ${deal.companyName}`,
       "Draft escalation email to decision maker"
-    ],
-    'risk': [
+    );
+  } else if (deal.status === 'risk') {
+    contextualPrompts.push(
       "Generate risk mitigation plan",
-      "Create competitive analysis",
-      "Draft objection handling document"
-    ]
-  };
-
-  // Combine relevant prompts based on deal context
-  let contextualPrompts = [...basePrompts];
-  
-  // Add stage-specific prompts
-  if (deal.stage in stagePrompts) {
-    contextualPrompts = [...contextualPrompts, ...stagePrompts[deal.stage as keyof typeof stagePrompts]];
+      "Create competitive analysis"
+    );
   }
 
-  // Add status-specific prompts
-  if (deal.status in statusPrompts) {
-    contextualPrompts = [...contextualPrompts, ...statusPrompts[deal.status as keyof typeof statusPrompts]];
-  }
-
-  // Add time-based prompts
+  // Time-based prompts
   if (deal.daysInStage > 10) {
-    contextualPrompts.push("Generate stage progression plan");
+    contextualPrompts.push(
+      `Create stage progression plan for ${deal.companyName}`,
+      "Generate deal acceleration strategies"
+    );
   }
 
-  return contextualPrompts.slice(0, 5); // Return top 5 most relevant prompts
+  return contextualPrompts.slice(0, 5);
 };
 
 export default function SalesCoworker() {
   const [selectedDeal, setSelectedDeal] = useState<Deal>(deals[0]);
   const [customPrompt, setCustomPrompt] = useState('');
   const [chatHistory, setChatHistory] = useState<Array<{type: 'user' | 'assistant', message: string}>>([]);
+  const [prompts, setPrompts] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Update prompts whenever selected deal changes
+    setPrompts(getContextualPrompts(selectedDeal));
+  }, [selectedDeal]);
 
   const handleSendPrompt = (prompt: string) => {
-    setChatHistory([...chatHistory, { type: 'user', message: prompt }]);
-    setChatHistory(prev => [...prev, { 
-      type: 'assistant', 
-      message: `This is a placeholder response for: ${prompt}` 
-    }]);
+    setChatHistory(prev => [...prev, { type: 'user', message: prompt }]);
+    // Simulate AI response
+    setTimeout(() => {
+      setChatHistory(prev => [...prev, { 
+        type: 'assistant', 
+        message: `Processing request for ${selectedDeal.companyName}: ${prompt}` 
+      }]);
+    }, 500);
     setCustomPrompt('');
   };
 
@@ -133,37 +141,39 @@ export default function SalesCoworker() {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto grid grid-cols-4 gap-4">
         {/* Deals List */}
-        <div className="space-y-2">
+        <div className="bg-white rounded-lg shadow p-4">
           <h2 className="font-semibold text-lg mb-4">Active Deals</h2>
-          {deals.map((deal) => (
-            <div 
-              key={deal.id}
-              onClick={() => setSelectedDeal(deal)}
-              className={`cursor-pointer p-4 rounded-lg transition-all ${
-                selectedDeal.id === deal.id 
-                  ? 'bg-blue-50 border-blue-500 border-2'
-                  : 'bg-white hover:bg-gray-50 border-2 border-transparent'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium">{deal.companyName}</h3>
-                  <p className="text-sm text-gray-500">${deal.value.toLocaleString()}</p>
+          <div className="space-y-2">
+            {deals.map((deal) => (
+              <div 
+                key={deal.id}
+                onClick={() => setSelectedDeal(deal)}
+                className={`cursor-pointer p-4 rounded-lg transition-all ${
+                  selectedDeal.id === deal.id 
+                    ? 'bg-blue-50 border-blue-500 border-2'
+                    : 'hover:bg-gray-50 border-2 border-transparent'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">{deal.companyName}</h3>
+                    <p className="text-sm text-gray-500">${deal.value.toLocaleString()}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-400" />
+                <div className="mt-2 flex items-center justify-between">
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    deal.status === 'active' ? 'bg-green-100 text-green-700' :
+                    deal.status === 'stalled' ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    {deal.status.charAt(0).toUpperCase() + deal.status.slice(1)}
+                  </span>
+                  <span className="text-xs text-gray-500">{deal.stage}</span>
+                </div>
               </div>
-              <div className="mt-2 flex items-center justify-between">
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  deal.status === 'active' ? 'bg-green-100 text-green-700' :
-                  deal.status === 'stalled' ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-red-100 text-red-700'
-                }`}>
-                  {deal.status.charAt(0).toUpperCase() + deal.status.slice(1)}
-                </span>
-                <span className="text-xs text-gray-500">{deal.stage}</span>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* CRM Side */}
@@ -222,59 +232,57 @@ export default function SalesCoworker() {
         </div>
 
         {/* AI Assistant Side */}
-        <div className="space-y-4">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <Sparkles className="w-5 h-5 text-blue-500" />
-              <h2 className="text-lg font-semibold">AI Assistant</h2>
-            </div>
-            
-            {/* Suggested Prompts */}
-            <div className="mb-4">
-              <p className="text-sm text-gray-500 mb-2">Suggested Actions:</p>
-              <div className="space-y-2">
-                {getContextualPrompts(selectedDeal).map((prompt, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleSendPrompt(prompt)}
-                    className="w-full text-left p-2 text-sm rounded-lg hover:bg-blue-50 text-blue-600"
-                  >
-                    {prompt}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Chat History */}
-            <div className="h-64 overflow-y-auto mb-4 space-y-3 border rounded-lg p-3">
-              {chatHistory.map((chat, index) => (
-                <div key={index} className={`flex ${chat.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] rounded-lg p-2 ${
-                    chat.type === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100'
-                  }`}>
-                    {chat.message}
-                  </div>
-                </div>
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center space-x-2 mb-4">
+            <Sparkles className="w-5 h-5 text-blue-500" />
+            <h2 className="text-lg font-semibold">AI Assistant</h2>
+          </div>
+          
+          {/* Suggested Prompts */}
+          <div className="mb-4">
+            <p className="text-sm text-gray-500 mb-2">Suggested Actions:</p>
+            <div className="space-y-2">
+              {prompts.map((prompt, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSendPrompt(prompt)}
+                  className="w-full text-left p-2 text-sm rounded-lg hover:bg-blue-50 text-blue-600 transition-colors"
+                >
+                  {prompt}
+                </button>
               ))}
             </div>
+          </div>
 
-            {/* Input Area */}
-            <div className="flex space-x-2">
-              <input
-                type="text"
-                value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
-                placeholder="Ask anything about this deal..."
-                className="flex-1 p-2 border rounded-lg"
-                onKeyDown={(e) => e.key === 'Enter' && customPrompt && handleSendPrompt(customPrompt)}
-              />
-              <button
-                onClick={() => customPrompt && handleSendPrompt(customPrompt)}
-                className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </div>
+          {/* Chat History */}
+          <div className="h-64 overflow-y-auto mb-4 space-y-3 border rounded-lg p-3">
+            {chatHistory.map((chat, index) => (
+              <div key={index} className={`flex ${chat.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[80%] rounded-lg p-2 ${
+                  chat.type === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100'
+                }`}>
+                  {chat.message}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Input Area */}
+          <div className="flex space-x-2">
+            <input
+              type="text"
+              value={customPrompt}
+              onChange={(e) => setCustomPrompt(e.target.value)}
+              placeholder="Ask anything about this deal..."
+              className="flex-1 p-2 border rounded-lg"
+              onKeyDown={(e) => e.key === 'Enter' && customPrompt && handleSendPrompt(customPrompt)}
+            />
+            <button
+              onClick={() => customPrompt && handleSendPrompt(customPrompt)}
+              className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              <Send className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
