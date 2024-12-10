@@ -11,11 +11,21 @@ interface WidgetProps {
 export function SalesWidget({ activeApp, contextualPrompts }: WidgetProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
-  const [position, setPosition] = useState({ x: window.innerWidth - 420, y: 100 });
+  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [inputValue, setInputValue] = useState('');
+  const [isMounted, setIsMounted] = useState(false);
   
   const widgetRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+    // Set initial position after mount
+    setPosition({ 
+      x: typeof window !== 'undefined' ? window.innerWidth - 420 : 0, 
+      y: 100 
+    });
+  }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.target instanceof Element && e.target.closest('.drag-handle')) {
@@ -28,6 +38,8 @@ export function SalesWidget({ activeApp, contextualPrompts }: WidgetProps) {
   };
 
   useEffect(() => {
+    if (!isMounted) return;
+
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging && widgetRef.current) {
         const newX = e.clientX - dragStart.x;
@@ -55,7 +67,9 @@ export function SalesWidget({ activeApp, contextualPrompts }: WidgetProps) {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, dragStart]);
+  }, [isDragging, dragStart, isMounted]);
+
+  if (!isMounted) return null;
 
   return (
     <div
