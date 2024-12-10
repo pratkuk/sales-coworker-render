@@ -20,9 +20,10 @@ export function SalesWidget({ activeApp, contextualPrompts }: WidgetProps) {
 
   useEffect(() => {
     setIsMounted(true);
-    // Set initial position after mount
+    // Set initial position after mount - start from right side
+    const width = typeof window !== 'undefined' ? window.innerWidth : 1000;
     setPosition({ 
-      x: typeof window !== 'undefined' ? window.innerWidth - 420 : 0, 
+      x: width - 420, 
       y: 100 
     });
   }, []);
@@ -85,7 +86,7 @@ export function SalesWidget({ activeApp, contextualPrompts }: WidgetProps) {
         isDragging ? 'cursor-grabbing' : ''
       }`}
     >
-      {/* Header - Always visible */}
+      {/* Header */}
       <div
         className="drag-handle h-12 flex items-center justify-between px-4 bg-blue-600 text-white rounded-t-lg cursor-grab"
         onMouseDown={handleMouseDown}
@@ -102,7 +103,7 @@ export function SalesWidget({ activeApp, contextualPrompts }: WidgetProps) {
         </button>
       </div>
 
-      {/* Expandable Content */}
+      {/* Expanded Content */}
       {isExpanded && (
         <div className="p-4 bg-white rounded-b-lg">
           {/* Contextual Prompts */}
