@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { Deal } from '../types';
-import SalesWidget from './SalesWidget';
+import { SalesWidget } from './SalesWidget';  // Changed this line to use named import
 
 const deals: Deal[] = [
   {
@@ -54,7 +54,7 @@ const getContextualPrompts = (deal: Deal): string[] => {
 export function SalesCoworker() {
   const [selectedDeal, setSelectedDeal] = useState<Deal>(deals[0]);
   const [prompts, setPrompts] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeApp, setActiveApp] = useState<'hubspot' | 'clari' | 'dealhub' | 'gmail'>('hubspot');
 
   useEffect(() => {
     setPrompts(getContextualPrompts(selectedDeal));
@@ -67,19 +67,27 @@ export function SalesCoworker() {
   return (
     <div className="min-h-screen p-8">
       <div className="max-w-6xl mx-auto">
+        {/* App Switcher */}
+        <div className="mb-8 flex space-x-4">
+          {(['hubspot', 'clari', 'dealhub', 'gmail'] as const).map((app) => (
+            <button
+              key={app}
+              onClick={() => setActiveApp(app)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                activeApp === app
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {app.charAt(0).toUpperCase() + app.slice(1)}
+            </button>
+          ))}
+        </div>
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold">Deals</h1>
           <p className="text-gray-600">({deals.length} records)</p>
-        </div>
-
-        {/* Action Bar */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex gap-2">
-            <button className="px-4 py-2 bg-white border rounded">Data Quality</button>
-            <button className="px-4 py-2 bg-white border rounded">Actions</button>
-            <button className="px-4 py-2 bg-white border rounded">Create Deal</button>
-          </div>
         </div>
 
         {/* Search */}
@@ -89,8 +97,6 @@ export function SalesCoworker() {
             type="text"
             placeholder="Search deals..."
             className="pl-10 pr-4 py-2 w-full border rounded"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
@@ -136,9 +142,8 @@ export function SalesCoworker() {
 
       {/* Sales Widget */}
       <SalesWidget 
-        selectedDeal={selectedDeal}
-        prompts={prompts}
-        onSendMessage={handleSendMessage}
+        activeApp={activeApp}
+        contextualPrompts={prompts}
       />
     </div>
   );
