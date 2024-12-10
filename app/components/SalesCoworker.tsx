@@ -6,7 +6,9 @@ import {
   Calendar,
   MessageSquare,
   Send,
-  Sparkles
+  Sparkles,
+  DollarSign,
+  ChevronRight
 } from 'lucide-react';
 
 interface Deal {
@@ -17,34 +19,110 @@ interface Deal {
   nextStep: string;
   lastContact: string;
   probability: number;
+  status: 'active' | 'stalled' | 'risk';
+  daysInStage: number;
 }
 
-const sampleDeal: Deal = {
-  id: 1,
-  companyName: "Acme Corp",
-  stage: "Proposal",
-  value: 50000,
-  nextStep: "Schedule technical review",
-  lastContact: "2024-12-05",
-  probability: 60
-};
-
-const suggestedPrompts = [
-  "Draft a follow-up email",
-  "Generate meeting agenda",
-  "Summarize deal history",
-  "Create proposal outline"
+const deals: Deal[] = [
+  {
+    id: 1,
+    companyName: "Acme Corp",
+    stage: "Proposal",
+    value: 50000,
+    nextStep: "Schedule technical review",
+    lastContact: "2024-12-05",
+    probability: 60,
+    status: 'active',
+    daysInStage: 5
+  },
+  {
+    id: 2,
+    companyName: "TechStart Inc",
+    stage: "Negotiation",
+    value: 75000,
+    nextStep: "Follow up on pricing discussion",
+    lastContact: "2024-12-08",
+    probability: 80,
+    status: 'stalled',
+    daysInStage: 15
+  },
+  {
+    id: 3,
+    companyName: "Global Solutions Ltd",
+    stage: "Discovery",
+    value: 120000,
+    nextStep: "Initial requirements gathering",
+    lastContact: "2024-12-09",
+    probability: 30,
+    status: 'risk',
+    daysInStage: 2
+  }
 ];
 
+const getContextualPrompts = (deal: Deal): string[] => {
+  const basePrompts = [
+    "Draft a follow-up email",
+    "Summarize deal history"
+  ];
+
+  const stagePrompts = {
+    "Discovery": [
+      "Create discovery call agenda",
+      "Generate qualification questions",
+      "Draft needs assessment document"
+    ],
+    "Proposal": [
+      "Generate proposal outline",
+      "Draft ROI calculation",
+      "Create technical review agenda"
+    ],
+    "Negotiation": [
+      "Draft pricing comparison",
+      "Create negotiation strategy",
+      "Prepare contract summary"
+    ]
+  };
+
+  const statusPrompts = {
+    'stalled': [
+      `Re-engagement strategy for ${deal.companyName}`,
+      "Draft escalation email to decision maker"
+    ],
+    'risk': [
+      "Generate risk mitigation plan",
+      "Create competitive analysis",
+      "Draft objection handling document"
+    ]
+  };
+
+  // Combine relevant prompts based on deal context
+  let contextualPrompts = [...basePrompts];
+  
+  // Add stage-specific prompts
+  if (deal.stage in stagePrompts) {
+    contextualPrompts = [...contextualPrompts, ...stagePrompts[deal.stage as keyof typeof stagePrompts]];
+  }
+
+  // Add status-specific prompts
+  if (deal.status in statusPrompts) {
+    contextualPrompts = [...contextualPrompts, ...statusPrompts[deal.status as keyof typeof statusPrompts]];
+  }
+
+  // Add time-based prompts
+  if (deal.daysInStage > 10) {
+    contextualPrompts.push("Generate stage progression plan");
+  }
+
+  return contextualPrompts.slice(0, 5); // Return top 5 most relevant prompts
+};
+
 export default function SalesCoworker() {
-  const [selectedDeal] = useState<Deal>(sampleDeal);
+  const [selectedDeal, setSelectedDeal] = useState<Deal>(deals[0]);
   const [customPrompt, setCustomPrompt] = useState('');
   const [chatHistory, setChatHistory] = useState<Array<{type: 'user' | 'assistant', message: string}>>([]);
 
   const handleSendPrompt = (prompt: string) => {
-    // Add user message to chat
     setChatHistory([...chatHistory, { type: 'user', message: prompt }]);
-    // Here we'll later add actual AI response logic
     setChatHistory(prev => [...prev, { 
       type: 'assistant', 
       message: `This is a placeholder response for: ${prompt}` 
@@ -54,7 +132,41 @@ export default function SalesCoworker() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-7xl mx-auto grid grid-cols-3 gap-4">
+      <div className="max-w-7xl mx-auto grid grid-cols-4 gap-4">
+        {/* Deals List */}
+        <div className="space-y-2">
+          <h2 className="font-semibold text-lg mb-4">Active Deals</h2>
+          {deals.map((deal) => (
+            <div 
+              key={deal.id}
+              onClick={() => setSelectedDeal(deal)}
+              className={`cursor-pointer p-4 rounded-lg transition-all ${
+                selectedDeal.id === deal.id 
+                  ? 'bg-blue-50 border-blue-500 border-2'
+                  : 'bg-white hover:bg-gray-50 border-2 border-transparent'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">{deal.companyName}</h3>
+                  <p className="text-sm text-gray-500">${deal.value.toLocaleString()}</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              </div>
+              <div className="mt-2 flex items-center justify-between">
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  deal.status === 'active' ? 'bg-green-100 text-green-700' :
+                  deal.status === 'stalled' ? 'bg-yellow-100 text-yellow-700' :
+                  'bg-red-100 text-red-700'
+                }`}>
+                  {deal.status.charAt(0).toUpperCase() + deal.status.slice(1)}
+                </span>
+                <span className="text-xs text-gray-500">{deal.stage}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
         {/* CRM Side */}
         <div className="col-span-2 space-y-4">
           {/* Deal Header */}
@@ -122,7 +234,7 @@ export default function SalesCoworker() {
             <div className="mb-4">
               <p className="text-sm text-gray-500 mb-2">Suggested Actions:</p>
               <div className="space-y-2">
-                {suggestedPrompts.map((prompt, index) => (
+                {getContextualPrompts(selectedDeal).map((prompt, index) => (
                   <button
                     key={index}
                     onClick={() => handleSendPrompt(prompt)}
