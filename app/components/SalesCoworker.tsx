@@ -15,7 +15,97 @@ import {
 } from 'lucide-react';
 import { Deal } from '../types';
 
-// ... (keep the deals data and getContextualPrompts function the same)
+const deals: Deal[] = [
+  {
+    id: 1,
+    companyName: "Acme Corp",
+    stage: "Proposal",
+    value: 50000,
+    nextStep: "Schedule technical review",
+    lastContact: "2024-12-05",
+    probability: 60,
+    status: 'active',
+    daysInStage: 5
+  },
+  {
+    id: 2,
+    companyName: "TechStart Inc",
+    stage: "Negotiation",
+    value: 75000,
+    nextStep: "Follow up on pricing discussion",
+    lastContact: "2024-12-08",
+    probability: 80,
+    status: 'stalled',
+    daysInStage: 15
+  },
+  {
+    id: 3,
+    companyName: "Global Solutions Ltd",
+    stage: "Discovery",
+    value: 120000,
+    nextStep: "Initial requirements gathering",
+    lastContact: "2024-12-09",
+    probability: 30,
+    status: 'risk',
+    daysInStage: 2
+  }
+];
+
+const getContextualPrompts = (deal: Deal): string[] => {
+  // Base prompts for all deals
+  let contextualPrompts = [
+    `Draft a follow-up email to ${deal.companyName}`,
+    `Summarize ${deal.companyName} deal history`,
+  ];
+
+  // Stage-specific prompts
+  switch (deal.stage) {
+    case "Discovery":
+      contextualPrompts.push(
+        "Generate discovery call agenda",
+        "Create qualification questions list",
+        "Draft needs assessment document"
+      );
+      break;
+    case "Proposal":
+      contextualPrompts.push(
+        "Generate proposal outline",
+        "Calculate ROI projections",
+        "Create technical review agenda"
+      );
+      break;
+    case "Negotiation":
+      contextualPrompts.push(
+        "Draft pricing comparison",
+        "Create negotiation strategy",
+        `Generate ${deal.companyName} contract terms`
+      );
+      break;
+  }
+
+  // Status-specific prompts
+  if (deal.status === 'stalled') {
+    contextualPrompts.push(
+      `Create re-engagement plan for ${deal.companyName}`,
+      "Draft escalation email to decision maker"
+    );
+  } else if (deal.status === 'risk') {
+    contextualPrompts.push(
+      "Generate risk mitigation plan",
+      "Create competitive analysis"
+    );
+  }
+
+  // Time-based prompts
+  if (deal.daysInStage > 10) {
+    contextualPrompts.push(
+      `Create stage progression plan for ${deal.companyName}`,
+      "Generate deal acceleration strategies"
+    );
+  }
+
+  return contextualPrompts.slice(0, 5);
+};
 
 export default function SalesCoworker() {
   const [selectedDeal, setSelectedDeal] = useState<Deal>(deals[0]);
