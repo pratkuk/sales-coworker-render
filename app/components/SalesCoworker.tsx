@@ -12,8 +12,99 @@ import {
   ChevronUp,
   CircleDot
 } from 'lucide-react';
+import { Deal } from '../types';
 
-// ... (keep all the interfaces and deal data the same)
+const deals: Deal[] = [
+  {
+    id: 1,
+    companyName: "Acme Corp",
+    stage: "Proposal",
+    value: 50000,
+    nextStep: "Schedule technical review",
+    lastContact: "2024-12-05",
+    probability: 60,
+    status: 'active',
+    daysInStage: 5
+  },
+  {
+    id: 2,
+    companyName: "TechStart Inc",
+    stage: "Negotiation",
+    value: 75000,
+    nextStep: "Follow up on pricing discussion",
+    lastContact: "2024-12-08",
+    probability: 80,
+    status: 'stalled',
+    daysInStage: 15
+  },
+  {
+    id: 3,
+    companyName: "Global Solutions Ltd",
+    stage: "Discovery",
+    value: 120000,
+    nextStep: "Initial requirements gathering",
+    lastContact: "2024-12-09",
+    probability: 30,
+    status: 'risk',
+    daysInStage: 2
+  }
+];
+
+const getContextualPrompts = (deal: Deal): string[] => {
+  // Base prompts for all deals
+  let contextualPrompts = [
+    `Draft a follow-up email to ${deal.companyName}`,
+    `Summarize ${deal.companyName} deal history`,
+  ];
+
+  // Stage-specific prompts
+  switch (deal.stage) {
+    case "Discovery":
+      contextualPrompts.push(
+        "Generate discovery call agenda",
+        "Create qualification questions list",
+        "Draft needs assessment document"
+      );
+      break;
+    case "Proposal":
+      contextualPrompts.push(
+        "Generate proposal outline",
+        "Calculate ROI projections",
+        "Create technical review agenda"
+      );
+      break;
+    case "Negotiation":
+      contextualPrompts.push(
+        "Draft pricing comparison",
+        "Create negotiation strategy",
+        `Generate ${deal.companyName} contract terms`
+      );
+      break;
+  }
+
+  // Status-specific prompts
+  if (deal.status === 'stalled') {
+    contextualPrompts.push(
+      `Create re-engagement plan for ${deal.companyName}`,
+      "Draft escalation email to decision maker"
+    );
+  } else if (deal.status === 'risk') {
+    contextualPrompts.push(
+      "Generate risk mitigation plan",
+      "Create competitive analysis"
+    );
+  }
+
+  // Time-based prompts
+  if (deal.daysInStage > 10) {
+    contextualPrompts.push(
+      `Create stage progression plan for ${deal.companyName}`,
+      "Generate deal acceleration strategies"
+    );
+  }
+
+  return contextualPrompts.slice(0, 5);
+};
 
 export default function SalesCoworker() {
   const [selectedDeal, setSelectedDeal] = useState<Deal>(deals[0]);
@@ -22,7 +113,22 @@ export default function SalesCoworker() {
   const [prompts, setPrompts] = useState<string[]>([]);
   const [isAIWidgetExpanded, setIsAIWidgetExpanded] = useState(true);
 
-  // ... (keep all the useEffect and handler functions the same)
+  useEffect(() => {
+    // Update prompts whenever selected deal changes
+    setPrompts(getContextualPrompts(selectedDeal));
+  }, [selectedDeal]);
+
+  const handleSendPrompt = (prompt: string) => {
+    setChatHistory(prev => [...prev, { type: 'user', message: prompt }]);
+    // Simulate AI response
+    setTimeout(() => {
+      setChatHistory(prev => [...prev, { 
+        type: 'assistant', 
+        message: `Processing request for ${selectedDeal.companyName}: ${prompt}` 
+      }]);
+    }, 500);
+    setCustomPrompt('');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -78,9 +184,59 @@ export default function SalesCoworker() {
             </div>
           </div>
 
-          {/* CRM Main Content - Same as before */}
+          {/* CRM Main Content */}
           <div className="col-span-3 space-y-4">
-            {/* ... (keep all the CRM content the same) ... */}
+            {/* Deal Header */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <Building2 className="w-8 h-8 text-blue-500" />
+                  <div>
+                    <h1 className="text-2xl font-bold">{selectedDeal.companyName}</h1>
+                    <p className="text-gray-500">Deal Value: ${selectedDeal.value.toLocaleString()}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-semibold text-blue-600">{selectedDeal.stage}</p>
+                  <p className="text-sm text-gray-500">{selectedDeal.probability}% Probability</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Deal Details */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h2 className="font-semibold mb-2">Next Steps</h2>
+                  <p className="text-gray-600">{selectedDeal.nextStep}</p>
+                </div>
+                <div>
+                  <h2 className="font-semibold mb-2">Last Contact</h2>
+                  <p className="text-gray-600">{selectedDeal.lastContact}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Timeline/Activities */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="font-semibold mb-4">Recent Activities</h2>
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <Calendar className="w-5 h-5 text-blue-500 mt-1" />
+                  <div>
+                    <p className="font-medium">Discovery Call Completed</p>
+                    <p className="text-sm text-gray-500">Dec 5, 2024</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <MessageSquare className="w-5 h-5 text-blue-500 mt-1" />
+                  <div>
+                    <p className="font-medium">Email Follow-up Sent</p>
+                    <p className="text-sm text-gray-500">Dec 7, 2024</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
