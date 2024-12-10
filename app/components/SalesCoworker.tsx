@@ -2,9 +2,7 @@
 
 import { useState } from 'react';
 import { 
-  UserCircle, 
   Building2, 
-  DollarSign, 
   Calendar,
   MessageSquare,
   Send,
@@ -39,7 +37,7 @@ const suggestedPrompts = [
 ];
 
 export default function SalesCoworker() {
-  const [selectedDeal, setSelectedDeal] = useState<Deal>(sampleDeal);
+  const [selectedDeal] = useState<Deal>(sampleDeal);
   const [customPrompt, setCustomPrompt] = useState('');
   const [chatHistory, setChatHistory] = useState<Array<{type: 'user' | 'assistant', message: string}>>([]);
 
