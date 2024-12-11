@@ -1,7 +1,7 @@
 import dynamic from 'next/dynamic'
 
 const SalesCoworker = dynamic(
-  () => import('./components/SalesCoworker').then(mod => mod.SalesCoworker),
+  () => import('./components/SalesCoworker'),
   { ssr: false }
 )
 
