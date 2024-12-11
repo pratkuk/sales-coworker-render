@@ -7,7 +7,7 @@ export interface EmailItem {
   preview?: string;
   date?: string;
   unread?: boolean;
-  type?: 'meeting' | 'contract' | 'proposal';
+  type?: string;
 }
 
 export interface DealItem {
@@ -22,5 +22,4 @@ export interface WidgetProps {
   activeApp: AppType;
   suggestions: string[];
   isOpen?: boolean;
-  onClose?: () => void;
 }
