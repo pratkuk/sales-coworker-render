@@ -1,202 +1,169 @@
 'use client';
 
-interface MockItem {
-  id: string;
-  title: string;
-  subtitle: string;
-  value?: string;
-  status?: string;
-  date?: string;
-  type?: string;
-}
+import { useState } from 'react';
 
 interface ViewProps {
-  onSelect: (item: MockItem) => void;
-  selectedId?: string;
+  onSelect: (item: any) => void;
+  selectedId: string | null;
 }
 
-// Mock data for different views
-const mockDeals = [
-  { id: 'h1', title: 'Acme Corp', subtitle: 'Enterprise Deal', value: '$50,000', status: 'Proposal', date: '2024-12-05' },
-  { id: 'h2', title: 'TechStart Inc', subtitle: 'Platform License', value: '$75,000', status: 'Negotiation', date: '2024-12-08' },
-  { id: 'h3', title: 'Global Solutions', subtitle: 'Custom Package', value: '$120,000', status: 'Discovery', date: '2024-12-10' },
-  { id: 'h4', title: 'InnovateAI', subtitle: 'Annual License', value: '$95,000', status: 'Proposal', date: '2024-12-11' }
-];
+export const HubspotView = ({ onSelect, selectedId }: ViewProps) => {
+  const deals = [
+    { id: '1', name: 'Enterprise Deal', company: 'TechCorp', amount: 50000, stage: 'Negotiation' },
+    { id: '2', name: 'Product Expansion', company: 'InnovateInc', amount: 75000, stage: 'Discovery' },
+    { id: '3', name: 'Service Contract', company: 'DataFlow', amount: 30000, stage: 'Closing' },
+    { id: '4', name: 'Platform License', company: 'CloudSys', amount: 60000, stage: 'Proposal' },
+    { id: '5', name: 'Annual Renewal', company: 'NetWorks', amount: 45000, stage: 'Negotiation' }
+  ];
 
-export function HubspotView({ onSelect, selectedId }: ViewProps) {
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">Deals</h1>
-      <div className="bg-white rounded-lg overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="text-left p-4 font-medium text-gray-600">Deal Name</th>
-              <th className="text-left p-4 font-medium text-gray-600">Value</th>
-              <th className="text-left p-4 font-medium text-gray-600">Stage</th>
-              <th className="text-left p-4 font-medium text-gray-600">Last Updated</th>
+    <div className="bg-white rounded-lg shadow">
+      <table className="min-w-full">
+        <thead>
+          <tr className="bg-gray-50 border-b">
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deal Name</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stage</th>
+          </tr>
+        </thead>
+        <tbody>
+          {deals.map((deal) => (
+            <tr 
+              key={deal.id}
+              onClick={() => onSelect(deal)}
+              className={`border-b hover:bg-gray-50 cursor-pointer transition-colors ${selectedId === deal.id ? 'bg-blue-50' : ''}`}
+            >
+              <td className="px-6 py-4">{deal.name}</td>
+              <td className="px-6 py-4">{deal.company}</td>
+              <td className="px-6 py-4">${deal.amount.toLocaleString()}</td>
+              <td className="px-6 py-4">{deal.stage}</td>
             </tr>
-          </thead>
-          <tbody>
-            {mockDeals.map((deal, index) => (
-              <tr 
-                key={deal.id}
-                onClick={() => onSelect(deal)}
-                className={`cursor-pointer transition-colors
-                  ${selectedId === deal.id ? 'bg-blue-50' : index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-                  ${selectedId === deal.id ? 'hover:bg-blue-100' : 'hover:bg-gray-100'}`}
-              >
-                <td className="p-4">
-                  <div className="font-medium">{deal.title}</div>
-                  <div className="text-sm text-gray-500">{deal.subtitle}</div>
-                </td>
-                <td className="p-4">{deal.value}</td>
-                <td className="p-4">
-                  <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                    {deal.status}
-                  </span>
-                </td>
-                <td className="p-4 text-gray-500">{deal.date}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
-}
+};
 
-const mockForecasts = [
-  { id: 'c1', title: 'Q4 Pipeline', subtitle: 'Current Quarter', value: '$1.2M', status: 'On Track', date: 'Dec 2024' },
-  { id: 'c2', title: 'Q1 2024', subtitle: 'Next Quarter', value: '$890K', status: 'At Risk', date: 'Mar 2024' },
-  { id: 'c3', title: 'Enterprise', subtitle: 'Strategic', value: '$3.2M', status: 'Above Plan', date: 'Dec 2024' },
-];
+export const ClariView = ({ onSelect, selectedId }: ViewProps) => {
+  const forecasts = [
+    { id: '1', opportunity: 'Q1 Enterprise Expansion', forecast: 200000, confidence: 'High' },
+    { id: '2', opportunity: 'Q2 New Market Entry', forecast: 150000, confidence: 'Medium' },
+    { id: '3', opportunity: 'Q1 Product Launch', forecast: 300000, confidence: 'Low' },
+    { id: '4', opportunity: 'Q2 Service Upgrades', forecast: 175000, confidence: 'High' },
+    { id: '5', opportunity: 'Q1 Partnership Deal', forecast: 250000, confidence: 'Medium' }
+  ];
 
-export function ClariView({ onSelect, selectedId }: ViewProps) {
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">Pipeline Forecast</h1>
-      <div className="bg-white rounded-lg overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="text-left p-4 font-medium text-gray-600">Pipeline</th>
-              <th className="text-left p-4 font-medium text-gray-600">Value</th>
-              <th className="text-left p-4 font-medium text-gray-600">Status</th>
-              <th className="text-left p-4 font-medium text-gray-600">Period</th>
+    <div className="bg-white rounded-lg shadow">
+      <table className="min-w-full">
+        <thead>
+          <tr className="bg-gray-50 border-b">
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Opportunity</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Forecast</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Confidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          {forecasts.map((forecast) => (
+            <tr 
+              key={forecast.id}
+              onClick={() => onSelect(forecast)}
+              className={`border-b hover:bg-gray-50 cursor-pointer transition-colors ${selectedId === forecast.id ? 'bg-blue-50' : ''}`}
+            >
+              <td className="px-6 py-4">{forecast.opportunity}</td>
+              <td className="px-6 py-4">${forecast.forecast.toLocaleString()}</td>
+              <td className="px-6 py-4">
+                <span className={`px-2 py-1 rounded-full text-xs ${{
+                  'High': 'bg-green-100 text-green-800',
+                  'Medium': 'bg-yellow-100 text-yellow-800',
+                  'Low': 'bg-red-100 text-red-800'
+                }[forecast.confidence]}`}>
+                  {forecast.confidence}
+                </span>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {mockForecasts.map((forecast, index) => (
-              <tr
-                key={forecast.id}
-                onClick={() => onSelect(forecast)}
-                className={`cursor-pointer transition-colors
-                  ${selectedId === forecast.id ? 'bg-blue-50' : index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-                  ${selectedId === forecast.id ? 'hover:bg-blue-100' : 'hover:bg-gray-100'}`}
-              >
-                <td className="p-4">
-                  <div className="font-medium">{forecast.title}</div>
-                  <div className="text-sm text-gray-500">{forecast.subtitle}</div>
-                </td>
-                <td className="p-4">{forecast.value}</td>
-                <td className="p-4">{forecast.status}</td>
-                <td className="p-4">{forecast.date}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
-}
+};
 
-const mockProposals = [
-  { id: 'd1', title: 'Acme Corp', subtitle: 'Enterprise Package', value: '$50,000', status: 'Draft', date: '2024-12-05' },
-  { id: 'd2', title: 'TechStart', subtitle: 'Pro Plus', value: '$75,000', status: 'Review', date: '2024-12-08' },
-  { id: 'd3', title: 'Global Solutions', subtitle: 'Custom', value: '$120,000', status: 'Sent', date: '2024-12-09' }
-];
+export const DealhubView = ({ onSelect, selectedId }: ViewProps) => {
+  const proposals = [
+    { id: '1', title: 'Enterprise Solution Package', client: 'MegaCorp', value: 100000, status: 'Draft' },
+    { id: '2', title: 'Custom Integration Proposal', client: 'TechStart', value: 75000, status: 'Sent' },
+    { id: '3', title: 'Platform Migration Plan', client: 'DataFlow', value: 150000, status: 'Viewed' },
+    { id: '4', title: 'Annual Service Contract', client: 'CloudNet', value: 90000, status: 'Accepted' },
+    { id: '5', title: 'Security Enhancement Pack', client: 'SecureInc', value: 60000, status: 'Draft' }
+  ];
 
-export function DealhubView({ onSelect, selectedId }: ViewProps) {
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">Quotes & Proposals</h1>
-      <div className="bg-white rounded-lg overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="text-left p-4 font-medium text-gray-600">Proposal</th>
-              <th className="text-left p-4 font-medium text-gray-600">Value</th>
-              <th className="text-left p-4 font-medium text-gray-600">Status</th>
-              <th className="text-left p-4 font-medium text-gray-600">Last Modified</th>
+    <div className="bg-white rounded-lg shadow">
+      <table className="min-w-full">
+        <thead>
+          <tr className="bg-gray-50 border-b">
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Value</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {proposals.map((proposal) => (
+            <tr 
+              key={proposal.id}
+              onClick={() => onSelect(proposal)}
+              className={`border-b hover:bg-gray-50 cursor-pointer transition-colors ${selectedId === proposal.id ? 'bg-blue-50' : ''}`}
+            >
+              <td className="px-6 py-4">{proposal.title}</td>
+              <td className="px-6 py-4">{proposal.client}</td>
+              <td className="px-6 py-4">${proposal.value.toLocaleString()}</td>
+              <td className="px-6 py-4">
+                <span className={`px-2 py-1 rounded-full text-xs ${{
+                  'Draft': 'bg-gray-100 text-gray-800',
+                  'Sent': 'bg-blue-100 text-blue-800',
+                  'Viewed': 'bg-yellow-100 text-yellow-800',
+                  'Accepted': 'bg-green-100 text-green-800'
+                }[proposal.status]}`}>
+                  {proposal.status}
+                </span>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {mockProposals.map((proposal, index) => (
-              <tr
-                key={proposal.id}
-                onClick={() => onSelect(proposal)}
-                className={`cursor-pointer transition-colors
-                  ${selectedId === proposal.id ? 'bg-blue-50' : index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-                  ${selectedId === proposal.id ? 'hover:bg-blue-100' : 'hover:bg-gray-100'}`}
-              >
-                <td className="p-4">
-                  <div className="font-medium">{proposal.title}</div>
-                  <div className="text-sm text-gray-500">{proposal.subtitle}</div>
-                </td>
-                <td className="p-4">{proposal.value}</td>
-                <td className="p-4">{proposal.status}</td>
-                <td className="p-4">{proposal.date}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
-}
+};
 
-const mockEmails = [
-  { id: 'g1', title: 'RE: Technical Review Meeting', subtitle: 'From: john@acme.com', date: '10:30 AM', status: 'Unread' },
-  { id: 'g2', title: 'Updated Proposal Draft', subtitle: 'From: sarah@techstart.com', date: 'Yesterday', status: 'Read' },
-  { id: 'g3', title: 'Security Requirements Doc', subtitle: 'From: tech@global.com', date: '2 days ago', status: 'Unread' },
-  { id: 'g4', title: 'Meeting Notes', subtitle: 'From: team@innovate.ai', date: 'Dec 11', status: 'Read' }
-];
+export const GmailView = ({ onSelect, selectedId }: ViewProps) => {
+  const emails = [
+    { id: '1', subject: 'Contract Review Request', from: 'legal@techcorp.com', preview: 'Please review the attached contract...', date: 'Today', unread: true },
+    { id: '2', subject: 'Meeting Follow-up: Project Timeline', from: 'pm@client.com', preview: 'Thank you for today\'s discussion...', date: 'Yesterday', unread: false },
+    { id: '3', subject: 'Q1 Sales Pipeline Review', from: 'sales.director@company.com', preview: 'Here\'s an overview of our Q1 performance...', date: '2 days ago', unread: true },
+    { id: '4', subject: 'New Feature Announcement', from: 'product@company.com', preview: 'Exciting updates coming to our platform...', date: '3 days ago', unread: false },
+    { id: '5', subject: 'Partnership Opportunity', from: 'bd@partner.com', preview: 'I\'d like to discuss a potential partnership...', date: '4 days ago', unread: true }
+  ];
 
-export function GmailView({ onSelect, selectedId }: ViewProps) {
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">Sales Inbox</h1>
-      <div className="bg-white rounded-lg overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="text-left p-4 font-medium text-gray-600">Subject</th>
-              <th className="text-left p-4 font-medium text-gray-600">From</th>
-              <th className="text-left p-4 font-medium text-gray-600">Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {mockEmails.map((email, index) => (
-              <tr
-                key={email.id}
-                onClick={() => onSelect(email)}
-                className={`cursor-pointer transition-colors
-                  ${selectedId === email.id ? 'bg-blue-50' : index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-                  ${selectedId === email.id ? 'hover:bg-blue-100' : 'hover:bg-gray-100'}`}
-              >
-                <td className="p-4">
-                  <div className={`font-medium ${email.status === 'Unread' ? 'font-semibold' : ''}`}>
-                    {email.title}
-                  </div>
-                </td>
-                <td className="p-4 text-gray-500">{email.subtitle}</td>
-                <td className="p-4 text-gray-500">{email.date}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="bg-white rounded-lg shadow divide-y">
+      {emails.map((email) => (
+        <div 
+          key={email.id}
+          onClick={() => onSelect(email)}
+          className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${selectedId === email.id ? 'bg-blue-50' : ''} ${email.unread ? 'font-semibold' : ''}`}
+        >
+          <div className="flex justify-between items-start mb-1">
+            <span className="text-sm">{email.from}</span>
+            <span className="text-xs text-gray-500">{email.date}</span>
+          </div>
+          <div className="text-sm font-medium mb-1">{email.subject}</div>
+          <div className="text-sm text-gray-600 truncate">{email.preview}</div>
+        </div>
+      ))}
     </div>
   );
-}
+};
