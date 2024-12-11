@@ -1,39 +1,142 @@
 'use client';
 
-interface WidgetProps {
-  activeApp: string;
-  selectedItem?: any;
-  suggestions: string[];
-}
+import { useState, useEffect } from 'react';
+import { MessageCircle, Minimize2, X } from 'lucide-react';
+import { WidgetProps } from '../types';
 
-export function SalesWidget({ activeApp, selectedItem, suggestions }: WidgetProps) {
+export const SalesWidget = ({ activeApp, suggestions, isOpen = true }: WidgetProps) => {
+  const [isExpanded, setIsExpanded] = useState(isOpen);
+  const [position, setPosition] = useState({ x: 20, y: 20 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<Array<{ text: string; isUser: boolean }>([]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragOffset({
+      x: e.clientX - position.x,
+      y: e.clientY - position.y
+    });
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        setPosition({
+          x: e.clientX - dragOffset.x,
+          y: e.clientY - dragOffset.y
+        });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragOffset]);
+
+  const handleSend = () => {
+    if (input.trim()) {
+      setMessages([...messages, { text: input, isUser: true }]);
+      setInput('');
+      // Simulate AI response
+      setTimeout(() => {
+        setMessages(prev => [...prev, {
+          text: `Here's a response based on your ${activeApp} context...`,
+          isUser: false
+        }]);
+      }, 1000);
+    }
+  };
+
+  if (!isExpanded) {
+    return (
+      <div
+        className="fixed cursor-pointer bg-blue-600 text-white p-3 rounded-full shadow-lg"
+        style={{ left: `${position.x}px`, top: `${position.y}px` }}
+        onClick={() => setIsExpanded(true)}
+      >
+        <MessageCircle size={24} />
+      </div>
+    );
+  }
+
   return (
-    <div className="fixed right-4 top-20 w-80">
-      <div className="bg-white p-4 rounded shadow">
-        <div className="mb-4">
-          <h2 className="font-medium">Sales Assistant ({activeApp})</h2>
-          <div className="inline-block border p-1">
-            <span className="text-lg">⤢</span>
-          </div>
+    <div
+      className="fixed bg-white rounded-lg shadow-xl w-80 flex flex-col"
+      style={{ right: '20px', bottom: '20px', height: '500px' }}
+    >
+      <div
+        className="bg-blue-600 text-white p-4 rounded-t-lg cursor-move flex justify-between items-center"
+        onMouseDown={handleMouseDown}
+      >
+        <div className="flex items-center gap-2">
+          <MessageCircle size={20} />
+          <span>AI Assistant</span>
         </div>
-        
-        <div>
-          <h3>Suggested actions:</h3>
-          <div className="space-y-2 mt-2">
-            {suggestions.map((suggestion, index) => (
-              <button
-                key={index}
-                className="block w-full text-left border rounded px-3 py-2 hover:bg-gray-50"
-              >
-                {suggestion}
-              </button>
-            ))}
-            <button className="block w-full text-left border rounded px-3 py-2 hover:bg-gray-50">
-              Start custom chat
-            </button>
-          </div>
+        <div className="flex gap-2">
+          <Minimize2
+            size={18}
+            className="cursor-pointer"
+            onClick={() => setIsExpanded(false)}
+          />
+          <X size={18} className="cursor-pointer" onClick={() => setIsExpanded(false)} />
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-auto p-4">
+        <div className="space-y-4">
+          {suggestions.map((suggestion, index) => (
+            <div
+              key={index}
+              className="bg-blue-50 p-3 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
+              onClick={() => {
+                setMessages(prev => [...prev, 
+                  { text: suggestion, isUser: true },
+                  { text: `Here's a response for: ${suggestion}`, isUser: false }
+                ]);
+              }}
+            >
+              {suggestion}
+            </div>
+          ))}
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`p-3 rounded-lg ${message.isUser ? 'bg-blue-100 ml-auto' : 'bg-gray-100'} max-w-[80%]`}
+            >
+              {message.text}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="p-4 border-t">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            className="flex-1 p-2 border rounded-lg"
+            placeholder="Type your message..."
+          />
+          <button
+            onClick={handleSend}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Send
+          </button>
         </div>
       </div>
     </div>
   );
-}
+};
