@@ -1,22 +1,21 @@
-// types.ts
 export type AppType = 'hubspot' | 'clari' | 'dealhub' | 'gmail';
 
 export interface EmailItem {
   id: string;
   subject: string;
   from: string;
-  date: string;
-  preview: string;
-  status: 'unread' | 'read';
+  preview?: string;
+  date?: string;
+  unread?: boolean;
+  type?: 'meeting' | 'contract' | 'proposal';
 }
 
 export interface DealItem {
   id: string;
+  name: string;
   company: string;
   amount: number;
   stage: string;
-  owner: string;
-  lastActivity: string;
 }
 
 export interface WidgetProps {
@@ -24,11 +23,4 @@ export interface WidgetProps {
   suggestions: string[];
   isOpen?: boolean;
   onClose?: () => void;
-  position?: { x: number; y: number };
-}
-
-export interface SuggestionProps {
-  text: string;
-  tooltip: string;
-  onClick: () => void;
 }
