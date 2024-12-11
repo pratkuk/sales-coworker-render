@@ -2,33 +2,31 @@
 
 import { useState, useEffect } from 'react';
 import { MessageCircle, Minimize2, X } from 'lucide-react';
-import { WidgetProps } from '../types';
+import type { WidgetProps } from '../types';
 
-type Message = {
+interface Message {
   text: string;
   isUser: boolean;
-};
+}
 
 export function SalesWidget({ activeApp, suggestions, isOpen = true }: WidgetProps) {
-  const [isExpanded, setIsExpanded] = useState(isOpen);
-  const [input, setInput] = useState('');
+  const [isExpanded, setIsExpanded] = useState<boolean>(isOpen);
+  const [input, setInput] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
-    // Reset messages when app changes
     setMessages([]);
   }, [activeApp]);
 
   const handleSend = () => {
     if (input.trim()) {
-      setMessages([...messages, { text: input, isUser: true }]);
+      setMessages(prev => [...prev, { text: input, isUser: true }]);
       setInput('');
-      // Simulate AI response
       setTimeout(() => {
-        setMessages(prev => [...prev, {
-          text: `Here's a response based on your ${activeApp} context...`,
-          isUser: false
-        }]);
+        setMessages(prev => [
+          ...prev,
+          { text: `Here's a response based on your ${activeApp} context...`, isUser: false }
+        ]);
       }, 1000);
     }
   };
