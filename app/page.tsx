@@ -1,7 +1,14 @@
-'use client';
+import dynamic from 'next/dynamic'
 
-import { SalesCoworker } from './components/SalesCoworker';
+const SalesCoworker = dynamic(
+  () => import('./components/SalesCoworker').then(mod => mod.SalesCoworker),
+  { ssr: false }
+)
 
 export default function Home() {
-  return <SalesCoworker />;
+  return (
+    <main>
+      <SalesCoworker />
+    </main>
+  )
 }
