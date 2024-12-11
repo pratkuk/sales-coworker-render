@@ -28,6 +28,9 @@ export function SalesWidget({ activeApp, selectedItem, suggestions }: WidgetProp
                 {suggestion}
               </button>
             ))}
+            <button className="block w-full text-left border rounded px-3 py-2 hover:bg-gray-50">
+              Start custom chat
+            </button>
           </div>
         </div>
       </div>
