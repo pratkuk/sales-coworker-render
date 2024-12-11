@@ -33,7 +33,7 @@ export function Walkthrough({ onComplete }: WalkthroughProps) {
             <ul className="space-y-2 list-disc pl-4 mb-4">
               <li>Hovering widget to invoke the AI agent</li>
               <li>Provides contextual suggestive prompts based on the app and selected item</li>
-              <li>Builds context across all your tools - Calendar, Clari, Dealhub, Gmail</li>
+              <li>Builds context across all your tools</li>
             </ul>
           </div>
         </div>
@@ -43,7 +43,7 @@ export function Walkthrough({ onComplete }: WalkthroughProps) {
           onClick={onComplete}
           className="absolute bottom-20 right-20 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
         >
-          Ok, let's go!
+          {"Let's go!"}
         </button>
       </div>
     </div>
