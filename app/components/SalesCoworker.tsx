@@ -1,96 +1,86 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { HubspotView, ClariView, DealhubView, GmailView } from './MockUIs';
+import { useState } from 'react';
+import { AppType } from '../types';
 import { SalesWidget } from './SalesWidget';
 import { getContextualPrompts } from './getContextualPrompts';
-import { Walkthrough } from './Walkthrough';
 
-type AppType = 'hubspot' | 'clari' | 'dealhub' | 'gmail';
-
-export function SalesCoworker() {
+export const SalesCoworker = () => {
   const [activeApp, setActiveApp] = useState<AppType>('hubspot');
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [showWalkthrough, setShowWalkthrough] = useState(true);
 
-  // Handle first-time visit
-  useEffect(() => {
-    const hasSeenWalkthrough = localStorage.getItem('hasSeenWalkthrough');
-    if (hasSeenWalkthrough) {
-      setShowWalkthrough(false);
-    }
-  }, []);
+  // Mock items data
+  const mockItems = {
+    hubspot: [
+      { id: '1', name: 'Enterprise Deal', company: 'TechCorp', amount: 50000, stage: 'Negotiation' },
+      { id: '2', name: 'Product Expansion', company: 'InnovateInc', amount: 75000, stage: 'Discovery' },
+    ],
+    gmail: [
+      { id: '1', subject: 'Contract Review', from: 'legal@company.com', type: 'contract' },
+      { id: '2', subject: 'Meeting Notes', from: 'team@company.com', type: 'meeting' },
+    ],
+  };
 
-  const handleWalkthroughComplete = () => {
-    setShowWalkthrough(false);
-    localStorage.setItem('hasSeenWalkthrough', 'true');
+  const handleAppSwitch = (app: AppType) => {
+    setActiveApp(app);
+    setSelectedItem(null);
   };
 
   const handleItemSelect = (item: any) => {
     setSelectedItem(item);
   };
 
-  const handleAppChange = (app: AppType) => {
-    setActiveApp(app);
-    setSelectedItem(null); // Clear selection when changing apps
-  };
-
-  const renderActiveView = () => {
-    const props = {
-      onSelect: handleItemSelect,
-      selectedId: selectedItem?.id
-    };
-
-    switch (activeApp) {
-      case 'hubspot':
-        return <HubspotView {...props} />;
-      case 'clari':
-        return <ClariView {...props} />;
-      case 'dealhub':
-        return <DealhubView {...props} />;
-      case 'gmail':
-        return <GmailView {...props} />;
-    }
-  };
-
   return (
-    <>
-      <div className="min-h-screen bg-gray-50">
-        {/* App Switcher */}
-        <div className="p-4 bg-white border-b">
-          {(['hubspot', 'clari', 'dealhub', 'gmail'] as AppType[]).map((app) => (
+    <div className="min-h-screen bg-gray-50">
+      {/* App Switcher */}
+      <div className="bg-white border-b p-4">
+        <div className="flex gap-4">
+          {(['hubspot', 'clari', 'dealhub', 'gmail'] as AppType[]).map(app => (
             <button
               key={app}
-              onClick={() => handleAppChange(app)}
-              className={`mr-2 px-3 py-1 rounded-lg transition-colors ${
-                activeApp === app 
-                  ? 'bg-blue-100 text-blue-700 border-2 border-blue-500 font-medium' 
-                  : 'bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200'
-              }`}
+              onClick={() => handleAppSwitch(app)}
+              className={`px-4 py-2 rounded-lg ${activeApp === app ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
             >
               {app.charAt(0).toUpperCase() + app.slice(1)}
             </button>
           ))}
         </div>
-
-        {/* Main Content Area */}
-        <div className="p-8">
-          <div className="max-w-6xl mx-auto">
-            {renderActiveView()}
-          </div>
-        </div>
-
-        {/* Sales Widget */}
-        <SalesWidget 
-          activeApp={activeApp}
-          contextualPrompts={getContextualPrompts(activeApp, selectedItem)}
-        />
       </div>
 
-      {/* Walkthrough Overlay */}
-      {showWalkthrough && (
-        <Walkthrough onComplete={handleWalkthroughComplete} />
-      )}
-    </>
+      {/* Main Content Area */}
+      <div className="p-8">
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          {/* Render items based on active app */}
+          {mockItems[activeApp as keyof typeof mockItems]?.map(item => (
+            <div
+              key={item.id}
+              onClick={() => handleItemSelect(item)}
+              className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${selectedItem?.id === item.id ? 'bg-blue-50' : ''}`}
+            >
+              {/* Render item content based on app type */}
+              {activeApp === 'gmail' ? (
+                <div>
+                  <div className="font-medium">{item.subject}</div>
+                  <div className="text-sm text-gray-600">{item.from}</div>
+                </div>
+              ) : (
+                <div>
+                  <div className="font-medium">{item.name}</div>
+                  <div className="text-sm text-gray-600">{item.company} - ${item.amount.toLocaleString()}</div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Sales Widget */}
+      <SalesWidget 
+        activeApp={activeApp}
+        suggestions={getContextualPrompts(activeApp, selectedItem)}
+        isOpen={true}
+      />
+    </div>
   );
-}
+};
