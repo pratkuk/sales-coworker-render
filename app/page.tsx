@@ -1,14 +1,11 @@
-import dynamic from 'next/dynamic'
+'use client';
 
-const SalesCoworker = dynamic(
-  () => import('./components/SalesCoworker'),
-  { ssr: false }
-)
+import { SalesCoworker } from './components/SalesCoworker';
 
 export default function Home() {
   return (
-    <main>
+    <main className="min-h-screen">
       <SalesCoworker />
     </main>
-  )
+  );
 }
