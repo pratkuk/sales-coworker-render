@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AppType, EmailItem, DealItem } from '../types';
 import { SalesWidget } from './SalesWidget';
+import { Walkthrough } from './Walkthrough';
 
 const DEFAULT_SUGGESTIONS = {
   hubspot: [
@@ -49,6 +50,20 @@ const mockData = {
 export function SalesCoworker() {
   const [activeApp, setActiveApp] = useState<AppType>('hubspot');
   const [selectedItem, setSelectedItem] = useState<EmailItem | DealItem | null>(null);
+  const [showWalkthrough, setShowWalkthrough] = useState(true);
+
+  useEffect(() => {
+    // Check if user has seen walkthrough before
+    const hasSeenWalkthrough = localStorage.getItem('hasSeenWalkthrough');
+    if (hasSeenWalkthrough) {
+      setShowWalkthrough(false);
+    }
+  }, []);
+
+  const handleWalkthroughComplete = () => {
+    setShowWalkthrough(false);
+    localStorage.setItem('hasSeenWalkthrough', 'true');
+  };
 
   const getSuggestions = (app: AppType, item: EmailItem | DealItem | null) => {
     if (!item) return DEFAULT_SUGGESTIONS[app];
@@ -126,6 +141,8 @@ export function SalesCoworker() {
         suggestions={getSuggestions(activeApp, selectedItem)}
         isOpen={true}
       />
+
+      {showWalkthrough && <Walkthrough onComplete={handleWalkthroughComplete} />}
     </div>
   );
 }
