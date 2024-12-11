@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Sales Coworker',
-  description: 'A modern UI for sales professionals',
+  description: 'AI-powered sales assistant',
 }
 
 export default function RootLayout({
@@ -13,7 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-gray-50">
+      <body>
         {children}
       </body>
     </html>
