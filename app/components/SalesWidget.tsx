@@ -4,10 +4,15 @@ import { useState, useEffect } from 'react';
 import { MessageCircle, Minimize2, X } from 'lucide-react';
 import { WidgetProps } from '../types';
 
+type Message = {
+  text: string;
+  isUser: boolean;
+};
+
 export function SalesWidget({ activeApp, suggestions, isOpen = true }: WidgetProps) {
   const [isExpanded, setIsExpanded] = useState(isOpen);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<{text: string; isUser: boolean}[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
     // Reset messages when app changes
