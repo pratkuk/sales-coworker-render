@@ -4,44 +4,15 @@ import { useState, useEffect } from 'react';
 import { MessageCircle, Minimize2, X } from 'lucide-react';
 import { WidgetProps } from '../types';
 
-export const SalesWidget = ({ activeApp, suggestions, isOpen = true }: WidgetProps) => {
+export function SalesWidget({ activeApp, suggestions, isOpen = true }: WidgetProps) {
   const [isExpanded, setIsExpanded] = useState(isOpen);
-  const [position, setPosition] = useState({ x: 20, y: 20 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<Array<{ text: string; isUser: boolean }>([]);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setDragOffset({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y
-    });
-  };
+  const [messages, setMessages] = useState<{text: string; isUser: boolean}[]>([]);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging) {
-        setPosition({
-          x: e.clientX - dragOffset.x,
-          y: e.clientY - dragOffset.y
-        });
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, dragOffset]);
+    // Reset messages when app changes
+    setMessages([]);
+  }, [activeApp]);
 
   const handleSend = () => {
     if (input.trim()) {
@@ -60,8 +31,7 @@ export const SalesWidget = ({ activeApp, suggestions, isOpen = true }: WidgetPro
   if (!isExpanded) {
     return (
       <div
-        className="fixed cursor-pointer bg-blue-600 text-white p-3 rounded-full shadow-lg"
-        style={{ left: `${position.x}px`, top: `${position.y}px` }}
+        className="fixed bottom-4 right-4 cursor-pointer bg-blue-600 text-white p-3 rounded-full shadow-lg"
         onClick={() => setIsExpanded(true)}
       >
         <MessageCircle size={24} />
@@ -71,13 +41,10 @@ export const SalesWidget = ({ activeApp, suggestions, isOpen = true }: WidgetPro
 
   return (
     <div
-      className="fixed bg-white rounded-lg shadow-xl w-80 flex flex-col"
-      style={{ right: '20px', bottom: '20px', height: '500px' }}
+      className="fixed bottom-4 right-4 bg-white rounded-lg shadow-xl w-80 flex flex-col"
+      style={{ height: '500px' }}
     >
-      <div
-        className="bg-blue-600 text-white p-4 rounded-t-lg cursor-move flex justify-between items-center"
-        onMouseDown={handleMouseDown}
-      >
+      <div className="bg-blue-600 text-white p-4 rounded-t-lg flex justify-between items-center">
         <div className="flex items-center gap-2">
           <MessageCircle size={20} />
           <span>AI Assistant</span>
@@ -88,7 +55,11 @@ export const SalesWidget = ({ activeApp, suggestions, isOpen = true }: WidgetPro
             className="cursor-pointer"
             onClick={() => setIsExpanded(false)}
           />
-          <X size={18} className="cursor-pointer" onClick={() => setIsExpanded(false)} />
+          <X 
+            size={18} 
+            className="cursor-pointer" 
+            onClick={() => setIsExpanded(false)} 
+          />
         </div>
       </div>
 
@@ -125,7 +96,7 @@ export const SalesWidget = ({ activeApp, suggestions, isOpen = true }: WidgetPro
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             className="flex-1 p-2 border rounded-lg"
             placeholder="Type your message..."
           />
@@ -139,4 +110,4 @@ export const SalesWidget = ({ activeApp, suggestions, isOpen = true }: WidgetPro
       </div>
     </div>
   );
-};
+}
