@@ -4,10 +4,9 @@ export interface EmailItem {
   id: string;
   subject: string;
   from: string;
-  preview?: string;
-  date?: string;
-  unread?: boolean;
-  type?: string;
+  type: string;
+  preview: string;
+  date: string;
 }
 
 export interface DealItem {
@@ -18,8 +17,21 @@ export interface DealItem {
   stage: string;
 }
 
+export interface Deal {
+  company: string;
+  amount: number;
+  closeDate: string;
+  lastActivity: string;
+  nextActivity: string;
+}
+
 export interface WidgetProps {
   activeApp: AppType;
   suggestions: string[];
   isOpen?: boolean;
+  selectedDeal?: Deal | null;
+}
+
+export interface Props {
+  onDealClick?: (deal: Deal) => void;
 }
