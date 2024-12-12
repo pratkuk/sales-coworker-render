@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Search, Filter, Plus, X, ChevronDown, ArrowLeft, ArrowRight, RefreshCw, Settings, Download, MousePointerClick, MoreHorizontal } from 'lucide-react';
 import { Deal } from '../types';
