@@ -25,6 +25,7 @@ export function SalesWidget({ activeApp, suggestions, isOpen = true, selectedDea
   });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
+  const [shouldExpand, setShouldExpand] = useState(false);
   
   const widgetRef = useRef<HTMLDivElement>(null);
 
@@ -41,8 +42,6 @@ export function SalesWidget({ activeApp, suggestions, isOpen = true, selectedDea
           `Create deal summary for ${selectedDeal.company}`
         ]
       }]);
-    } else {
-      setMessages([]);
     }
   }, [selectedDeal]);
 
@@ -56,6 +55,7 @@ export function SalesWidget({ activeApp, suggestions, isOpen = true, selectedDea
     if (widgetRef.current) {
       const rect = widgetRef.current.getBoundingClientRect();
       setIsDragging(true);
+      setShouldExpand(false);
       setDragOffset({
         x: e.clientX - rect.left,
         y: e.clientY - rect.top
@@ -65,15 +65,18 @@ export function SalesWidget({ activeApp, suggestions, isOpen = true, selectedDea
 
   const handleMouseMove = (e: MouseEvent) => {
     if (isDragging && widgetRef.current) {
+      setShouldExpand(false);
       const newX = Math.min(Math.max(0, e.clientX - dragOffset.x), window.innerWidth - widgetRef.current.offsetWidth);
       const newY = Math.min(Math.max(0, e.clientY - dragOffset.y), window.innerHeight - widgetRef.current.offsetHeight);
-      
       setPosition({ x: newX, y: newY });
     }
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e: MouseEvent) => {
     setIsDragging(false);
+    if (shouldExpand) {
+      setIsExpanded(true);
+    }
   };
 
   useEffect(() => {
@@ -203,7 +206,10 @@ export function SalesWidget({ activeApp, suggestions, isOpen = true, selectedDea
       ) : (
         <button
           onClick={handleClick}
-          onMouseDown={handleMouseDown}
+          onMouseDown={(e) => {
+            handleMouseDown(e);
+            setShouldExpand(true);
+          }}
           className="w-12 h-12 rounded-full backdrop-blur-sm bg-blue-500/80 hover:bg-blue-600/80 text-white flex items-center justify-center shadow-lg"
         >
           <Lightbulb className="w-6 h-6" />
