@@ -1,21 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Filter, Plus, X, ChevronDown, ArrowLeft, ArrowRight, RefreshCw, Settings, Download, MousePointerClick, MoreHorizontal } from 'lucide-react';
-import { Deal } from '../types';
-
-interface DealCardProps {
-  company: string;
-  amount: number;
-  closeDate: string;
-  lastActivity: string;
-  nextActivity: string;
-  onClick: () => void;
-}
-
-interface Props {
-  onDealClick?: (deal: Deal) => void;
-}
+import { Search, Filter, Plus, X, ChevronDown, Settings, Download, MousePointerClick } from 'lucide-react';
+import { Deal, HubspotDealsProps, DealCardProps } from '../types';
 
 const DealCard: React.FC<DealCardProps> = ({ company, amount, closeDate, lastActivity, nextActivity, onClick }) => (
   <div 
@@ -30,7 +17,7 @@ const DealCard: React.FC<DealCardProps> = ({ company, amount, closeDate, lastAct
   </div>
 );
 
-export const HubSpotDeals: React.FC<Props> = ({ onDealClick }) => {
+export const HubSpotDeals: React.FC<HubspotDealsProps> = ({ onDealClick }) => {
   const [viewType, setViewType] = useState<'list' | 'grid'>('list');
   
   const tabs = ['CW NAEU', 'QTD New ARR Closed', 'Pratyush C2 Funnel', 'Partnership NA-EU', 'Partnership APAC', 'APAC MM', 'All deals', 'Forecast'];
@@ -133,9 +120,7 @@ export const HubSpotDeals: React.FC<Props> = ({ onDealClick }) => {
           {tabs.map((tab, i) => (
             <button
               key={i}
-              className={`px-3 py-2 text-sm whitespace-nowrap ${
-                i === 0 ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600'
-              }`}
+              className={`px-3 py-2 text-sm whitespace-nowrap ${i === 0 ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600'}`}
             >
               {tab}
             </button>
