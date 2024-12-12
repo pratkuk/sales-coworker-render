@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Filter, Plus, X, ChevronDown, ArrowLeft, ArrowRight, RefreshCw, Settings, Download, MousePointerClick, MoreHorizontal } from 'lucide-react';
-import { HubSpotDealsProps, Deal } from '../types';
+import { Deal } from '../types';
 
 interface DealCardProps {
   company: string;
@@ -9,6 +9,10 @@ interface DealCardProps {
   lastActivity: string;
   nextActivity: string;
   onClick: () => void;
+}
+
+interface Props {
+  onDealClick?: (deal: Deal) => void;
 }
 
 const DealCard: React.FC<DealCardProps> = ({ company, amount, closeDate, lastActivity, nextActivity, onClick }) => (
@@ -24,7 +28,7 @@ const DealCard: React.FC<DealCardProps> = ({ company, amount, closeDate, lastAct
   </div>
 );
 
-export const HubSpotDeals: React.FC<HubSpotDealsProps> = ({ onDealClick }) => {
+export const HubSpotDeals: React.FC<Props> = ({ onDealClick }) => {
   const [viewType, setViewType] = useState<'list' | 'grid'>('list');
   
   const tabs = ['CW NAEU', 'QTD New ARR Closed', 'Pratyush C2 Funnel', 'Partnership NA-EU', 'Partnership APAC', 'APAC MM', 'All deals', 'Forecast'];
