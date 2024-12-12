@@ -1,22 +1,5 @@
 export type AppType = 'hubspot' | 'clari' | 'dealhub' | 'gmail';
 
-export interface EmailItem {
-  id: string;
-  subject: string;
-  from: string;
-  type: string;
-  preview: string;
-  date: string;
-}
-
-export interface DealItem {
-  id: string;
-  name: string;
-  company: string;
-  amount: number;
-  stage: string;
-}
-
 export interface Deal {
   company: string;
   amount: number;
@@ -30,8 +13,4 @@ export interface WidgetProps {
   suggestions: string[];
   isOpen?: boolean;
   selectedDeal?: Deal | null;
-}
-
-export interface HubSpotDealsProps {
-  onDealClick?: (deal: Deal) => void;
 }
