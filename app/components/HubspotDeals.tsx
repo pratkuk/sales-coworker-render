@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Filter, Plus, X, ChevronDown, ArrowLeft, ArrowRight, RefreshCw, Settings, Download, MousePointerClick, MoreHorizontal } from 'lucide-react';
+import { HubSpotDealsProps, Deal } from '../types';
 
 interface DealCardProps {
   company: string;
@@ -7,10 +8,14 @@ interface DealCardProps {
   closeDate: string;
   lastActivity: string;
   nextActivity: string;
+  onClick: () => void;
 }
 
-const DealCard: React.FC<DealCardProps> = ({ company, amount, closeDate, lastActivity, nextActivity }) => (
-  <div className="border rounded p-3 bg-gray-50 mb-2">
+const DealCard: React.FC<DealCardProps> = ({ company, amount, closeDate, lastActivity, nextActivity, onClick }) => (
+  <div 
+    className="border rounded p-3 bg-gray-50 mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
+    onClick={onClick}
+  >
     <div className="text-sm font-medium">{company}</div>
     <div className="text-xs text-gray-500 mt-1">Amount: ${amount.toLocaleString()}</div>
     <div className="text-xs text-gray-500">Close date: {closeDate}</div>
@@ -19,7 +24,7 @@ const DealCard: React.FC<DealCardProps> = ({ company, amount, closeDate, lastAct
   </div>
 );
 
-export const HubSpotDeals: React.FC = () => {
+export const HubSpotDeals: React.FC<HubSpotDealsProps> = ({ onDealClick }) => {
   const [viewType, setViewType] = useState<'list' | 'grid'>('list');
   
   const tabs = ['CW NAEU', 'QTD New ARR Closed', 'Pratyush C2 Funnel', 'Partnership NA-EU', 'Partnership APAC', 'APAC MM', 'All deals', 'Forecast'];
@@ -95,9 +100,14 @@ export const HubSpotDeals: React.FC = () => {
     }
   ];
 
+  const handleDealClick = (deal: Deal) => {
+    if (onDealClick) {
+      onDealClick(deal);
+    }
+  };
+
   return (
     <div className="bg-gray-100 min-h-screen p-4">
-      {/* Top Navigation */}
       <div className="bg-white rounded-t-lg border-b">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center space-x-2">
@@ -113,7 +123,6 @@ export const HubSpotDeals: React.FC = () => {
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="flex items-center space-x-4 px-4 pb-2 overflow-x-auto">
           {tabs.map((tab, i) => (
             <button
@@ -128,7 +137,6 @@ export const HubSpotDeals: React.FC = () => {
         </div>
       </div>
 
-      {/* Toolbar */}
       <div className="bg-white p-4 border-b flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="flex space-x-2">
@@ -166,7 +174,6 @@ export const HubSpotDeals: React.FC = () => {
         </div>
       </div>
 
-      {/* Metrics */}
       <div className="grid grid-cols-6 gap-4 p-4 bg-white">
         {metrics.map((metric, i) => (
           <div key={i} className="text-center">
@@ -179,7 +186,6 @@ export const HubSpotDeals: React.FC = () => {
         ))}
       </div>
 
-      {/* Pipeline Stages */}
       <div className="bg-white mt-4 p-4">
         <div className="grid grid-cols-7 gap-4">
           {stages.map((stage, i) => (
@@ -189,7 +195,11 @@ export const HubSpotDeals: React.FC = () => {
                 <span className="text-sm text-gray-500">{stage.count}</span>
               </div>
               {stage.deals.map((deal, j) => (
-                <DealCard key={j} {...deal} />
+                <DealCard
+                  key={j}
+                  {...deal}
+                  onClick={() => handleDealClick(deal)}
+                />
               ))}
             </div>
           ))}
