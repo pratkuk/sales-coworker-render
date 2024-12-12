@@ -19,7 +19,7 @@ const DealCard: React.FC<DealCardProps> = ({ company, amount, closeDate, lastAct
   </div>
 );
 
-const HubSpotDeals: React.FC = () => {
+export const HubSpotDeals: React.FC = () => {
   const [viewType, setViewType] = useState<'list' | 'grid'>('list');
   
   const tabs = ['CW NAEU', 'QTD New ARR Closed', 'Pratyush C2 Funnel', 'Partnership NA-EU', 'Partnership APAC', 'APAC MM', 'All deals', 'Forecast'];
@@ -198,5 +198,3 @@ const HubSpotDeals: React.FC = () => {
     </div>
   );
 };
-
-export default HubSpotDeals;
