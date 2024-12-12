@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { AppType, EmailItem, DealItem } from '../types';
 import { SalesWidget } from './SalesWidget';
 import { Walkthrough } from './Walkthrough';
+import { HubSpotDeals } from './HubspotDeals';
 
 const DEFAULT_SUGGESTIONS = {
   hubspot: [
@@ -103,6 +104,26 @@ export function SalesCoworker() {
     );
   };
 
+  const renderContent = () => {
+    if (activeApp === 'hubspot') {
+      return <HubSpotDeals />;
+    }
+
+    return (
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        {mockData[activeApp]?.map(item => (
+          <div
+            key={item.id}
+            onClick={() => setSelectedItem(item)}
+            className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${selectedItem?.id === item.id ? 'bg-blue-50' : ''}`}
+          >
+            {renderItemContent(item)}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b p-4">
@@ -123,17 +144,7 @@ export function SalesCoworker() {
       </div>
 
       <div className="p-8">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          {mockData[activeApp]?.map(item => (
-            <div
-              key={item.id}
-              onClick={() => setSelectedItem(item)}
-              className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${selectedItem?.id === item.id ? 'bg-blue-50' : ''}`}
-            >
-              {renderItemContent(item)}
-            </div>
-          ))}
-        </div>
+        {renderContent()}
       </div>
 
       <SalesWidget 
