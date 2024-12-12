@@ -14,3 +14,16 @@ export interface WidgetProps {
   isOpen?: boolean;
   selectedDeal?: Deal | null;
 }
+
+export interface HubspotDealsProps {
+  onDealClick?: (deal: Deal) => void;
+}
+
+export interface DealCardProps {
+  company: string;
+  amount: number;
+  closeDate: string;
+  lastActivity: string;
+  nextActivity: string;
+  onClick: () => void;
+}
