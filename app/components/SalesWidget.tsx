@@ -15,7 +15,7 @@ interface Position {
   y: number;
 }
 
-export function SalesWidget({ activeApp, suggestions, isOpen = true }: WidgetProps) {
+export function SalesWidget({ activeApp, suggestions, isOpen = true, selectedDeal }: WidgetProps) {
   const [isExpanded, setIsExpanded] = useState(isOpen);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -29,7 +29,27 @@ export function SalesWidget({ activeApp, suggestions, isOpen = true }: WidgetPro
   const widgetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setMessages([]);
+    if (selectedDeal) {
+      setIsExpanded(true);
+      setMessages([{
+        text: `Let me help you with the ${selectedDeal.company} deal`,
+        isUser: false,
+        suggestions: [
+          `Analyze risk factors for ${selectedDeal.company} ($${selectedDeal.amount.toLocaleString()})`,
+          `Generate follow-up tasks for ${selectedDeal.lastActivity}`,
+          `Prepare meeting agenda for ${selectedDeal.nextActivity}`,
+          `Create deal summary for ${selectedDeal.company}`
+        ]
+      }]);
+    } else {
+      setMessages([]);
+    }
+  }, [selectedDeal]);
+
+  useEffect(() => {
+    if (!selectedDeal) {
+      setMessages([]);
+    }
   }, [activeApp]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -69,14 +89,20 @@ export function SalesWidget({ activeApp, suggestions, isOpen = true }: WidgetPro
 
   const handleSend = () => {
     if (input.trim()) {
-      setMessages([...messages, { text: input, isUser: true }]);
+      setMessages(prev => [...prev, { text: input, isUser: true }]);
       setInput('');
       setTimeout(() => {
         setMessages(prev => [...prev, {
-          text: `Here's a response based on your ${activeApp} context...`,
+          text: `Here's a response for your question about ${selectedDeal?.company || 'this deal'}...`,
           isUser: false
         }]);
       }, 1000);
+    }
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (!isDragging) {
+      setIsExpanded(true);
     }
   };
 
@@ -110,7 +136,36 @@ export function SalesWidget({ activeApp, suggestions, isOpen = true }: WidgetPro
           </div>
 
           <div className="flex-1 overflow-auto p-4 space-y-4">
-            {suggestions.map((suggestion, index) => (
+            {messages.map((message, index) => (
+              <div key={index}>
+                <div className={`p-3 rounded-2xl max-w-[80%] ${
+                  message.isUser 
+                    ? 'ml-auto backdrop-blur-sm bg-blue-500/80 text-white rounded-br-none'
+                    : 'backdrop-blur-sm bg-white/50 text-gray-800 rounded-bl-none'
+                }`}>
+                  {message.text}
+                </div>
+                {message.suggestions && (
+                  <div className="mt-4 space-y-2">
+                    {message.suggestions.map((suggestion, i) => (
+                      <button
+                        key={i}
+                        className="w-full p-3 backdrop-blur-sm bg-white/50 rounded-lg text-left hover:bg-white/60 transition-colors"
+                        onClick={() => {
+                          setMessages(prev => [...prev, 
+                            { text: suggestion, isUser: true },
+                            { text: `I'll help you ${suggestion.toLowerCase()}...`, isUser: false }
+                          ]);
+                        }}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+            {messages.length === 0 && suggestions.map((suggestion, index) => (
               <button
                 key={index}
                 className="w-full p-3 backdrop-blur-sm bg-white/50 rounded-lg text-left hover:bg-white/60 transition-colors"
@@ -123,18 +178,6 @@ export function SalesWidget({ activeApp, suggestions, isOpen = true }: WidgetPro
               >
                 {suggestion}
               </button>
-            ))}
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`p-3 rounded-2xl max-w-[80%] ${
-                  message.isUser 
-                    ? 'ml-auto backdrop-blur-sm bg-blue-500/80 text-white rounded-br-none'
-                    : 'backdrop-blur-sm bg-white/50 text-gray-800 rounded-bl-none'
-                }`}
-              >
-                {message.text}
-              </div>
             ))}
           </div>
 
@@ -159,6 +202,7 @@ export function SalesWidget({ activeApp, suggestions, isOpen = true }: WidgetPro
         </div>
       ) : (
         <button
+          onClick={handleClick}
           onMouseDown={handleMouseDown}
           className="w-12 h-12 rounded-full backdrop-blur-sm bg-blue-500/80 hover:bg-blue-600/80 text-white flex items-center justify-center shadow-lg"
         >
