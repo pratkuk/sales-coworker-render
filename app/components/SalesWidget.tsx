@@ -2,13 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Lightbulb, X } from 'lucide-react';
-import type { WidgetProps } from '../types';
-
-type Message = {
-  text: string;
-  isUser: boolean;
-  suggestions?: string[];
-};
+import type { WidgetProps, WidgetMessage } from '../types';
 
 interface Position {
   x: number;
@@ -18,16 +12,18 @@ interface Position {
 export function SalesWidget({ activeApp, suggestions, isOpen = true, selectedDeal }: WidgetProps) {
   const [isExpanded, setIsExpanded] = useState(isOpen);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<WidgetMessage[]>([]);
   const [position, setPosition] = useState<Position>({ 
     x: typeof window !== 'undefined' ? window.innerWidth - 100 : 0,
     y: typeof window !== 'undefined' ? window.innerHeight - 100 : 0
   });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
+  const [dragStartTime, setDragStartTime] = useState<number>(0);
   
   const widgetRef = useRef<HTMLDivElement>(null);
 
+  // Handle deal selection
   useEffect(() => {
     if (selectedDeal) {
       setIsExpanded(true);
@@ -35,17 +31,16 @@ export function SalesWidget({ activeApp, suggestions, isOpen = true, selectedDea
         text: `Let me help you with the ${selectedDeal.company} deal`,
         isUser: false,
         suggestions: [
-          `Analyze risk factors for ${selectedDeal.company} ($${selectedDeal.amount.toLocaleString()})`,
-          `Generate follow-up tasks for ${selectedDeal.lastActivity}`,
-          `Prepare meeting agenda for ${selectedDeal.nextActivity}`,
-          `Create deal summary for ${selectedDeal.company}`
+          `Analyze risks for ${selectedDeal.company} ($${selectedDeal.amount.toLocaleString()})`,
+          `Follow up on ${selectedDeal.lastActivity}`,
+          `Prepare for ${selectedDeal.nextActivity}`,
+          `Create deal summary and next steps`
         ]
       }]);
-    } else {
-      setMessages([]);
     }
   }, [selectedDeal]);
 
+  // Reset messages when app changes
   useEffect(() => {
     if (!selectedDeal) {
       setMessages([]);
@@ -56,10 +51,12 @@ export function SalesWidget({ activeApp, suggestions, isOpen = true, selectedDea
     if (widgetRef.current) {
       const rect = widgetRef.current.getBoundingClientRect();
       setIsDragging(true);
+      setDragStartTime(Date.now());
       setDragOffset({
         x: e.clientX - rect.left,
         y: e.clientY - rect.top
       });
+      e.preventDefault();
     }
   };
 
@@ -67,12 +64,15 @@ export function SalesWidget({ activeApp, suggestions, isOpen = true, selectedDea
     if (isDragging && widgetRef.current) {
       const newX = Math.min(Math.max(0, e.clientX - dragOffset.x), window.innerWidth - widgetRef.current.offsetWidth);
       const newY = Math.min(Math.max(0, e.clientY - dragOffset.y), window.innerHeight - widgetRef.current.offsetHeight);
-      
       setPosition({ x: newX, y: newY });
     }
   };
 
   const handleMouseUp = () => {
+    const dragDuration = Date.now() - dragStartTime;
+    if (dragDuration < 200 && !isExpanded) {
+      setIsExpanded(true);
+    }
     setIsDragging(false);
   };
 
@@ -85,24 +85,20 @@ export function SalesWidget({ activeApp, suggestions, isOpen = true, selectedDea
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, dragOffset]);
+  }, [isDragging]);
 
   const handleSend = () => {
     if (input.trim()) {
       setMessages(prev => [...prev, { text: input, isUser: true }]);
       setInput('');
+      
       setTimeout(() => {
+        const contextStr = selectedDeal ? ` about ${selectedDeal.company}` : '';
         setMessages(prev => [...prev, {
-          text: `Here's a response for your question about ${selectedDeal?.company || 'this deal'}...`,
+          text: `I'll help you${contextStr}...`,
           isUser: false
         }]);
       }, 1000);
-    }
-  };
-
-  const handleClick = (e: React.MouseEvent) => {
-    if (!isDragging) {
-      setIsExpanded(true);
     }
   };
 
@@ -172,7 +168,7 @@ export function SalesWidget({ activeApp, suggestions, isOpen = true, selectedDea
                 onClick={() => {
                   setMessages(prev => [...prev, 
                     { text: suggestion, isUser: true },
-                    { text: `Here's a response for: ${suggestion}`, isUser: false }
+                    { text: `Here's what I found about ${suggestion.toLowerCase()}...`, isUser: false }
                   ]);
                 }}
               >
@@ -202,7 +198,6 @@ export function SalesWidget({ activeApp, suggestions, isOpen = true, selectedDea
         </div>
       ) : (
         <button
-          onClick={handleClick}
           onMouseDown={handleMouseDown}
           className="w-12 h-12 rounded-full backdrop-blur-sm bg-blue-500/80 hover:bg-blue-600/80 text-white flex items-center justify-center shadow-lg"
         >

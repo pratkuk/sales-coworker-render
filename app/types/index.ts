@@ -8,9 +8,19 @@ export interface Deal {
   nextActivity: string;
 }
 
+export interface WidgetMessage {
+  text: string;
+  isUser: boolean;
+  suggestions?: string[];
+}
+
 export interface WidgetProps {
   activeApp: AppType;
   suggestions: string[];
   isOpen?: boolean;
   selectedDeal?: Deal | null;
+}
+
+export interface HubspotDealsProps {
+  onDealClick?: (deal: Deal) => void;
 }
